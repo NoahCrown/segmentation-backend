@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model TeamMatrix {
+  id                        Int                         @id @default(autoincrement())
+  name                      String
+  departments               Department[]
+  managementRolesOnIndustry ManagementRolesOnIndustry[]
+  clients                   Client[]
+}
+
+model Department {
+  id                 Int                 @id @default(autoincrement())
+  name               String
+  parentDepartmentId Int?
+  industryId         Int
+  parentDepartment   Department?         @relation("DepartmentToDepartment", fields: [parentDepartmentId], references: [id])
+  subDepartments     Department[]        @relation("DepartmentToDepartment")
+  industry           TeamMatrix          @relation(fields: [industryId], references: [id])
+  roles              Role[]
+  rolesOnJobRequest  RolesOnJobRequest[]
+
+  // Computed field to fetch the full hierarchy
+  @@map(name: "department")
+}
+
+model Role {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  departmentId      Int
+  isManagementRole  Boolean
+  managementRoleId  Int?
+  department        Department          @relation(fields: [departmentId], references: [id])
+  managementRole    ManagementRole?     @relation(fields: [managementRoleId], references: [id])
+  rolesOnJobRequest RolesOnJobRequest[]
+}
+
+model ManagementRole {
+  id                        Int                         @id @default(autoincrement())
+  name                      String
+  roles                     Role[]
+  managementRolesOnIndustry ManagementRolesOnIndustry[]
+}
+
+model SeniorityLevel {
+  id          Int          @id @default(autoincrement())
+  name        String
+  jobRequests JobRequest[]
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  name        String
+  jobRequests JobRequest[]
+}
+
+model JobRequest {
+  id                      Int                      @id @default(autoincrement())
+  userId                  Int
+  seniorityLevelId        Int
+  salaryMin               Int
+  salaryMax               Int
+  user                    User                     @relation(fields: [userId], references: [id])
+  seniorityLevel          SeniorityLevel           @relation(fields: [seniorityLevelId], references: [id])
+  skillsOnJobRequest      SkillOnJobRequest[]
+  locationsOnJobRequest   LocationOnJobRequest[]
+  customTypesOnJobRequest CustomTypeOnJobRequest[]
+  rolesOnJobRequest       RolesOnJobRequest[]
+}
+
+model Location {
+  id                    Int                    @id @default(autoincrement())
+  name                  String
+  locationsOnJobRequest LocationOnJobRequest[]
+}
+
+model CustomType {
+  id                      Int                      @id @default(autoincrement())
+  name                    String
+  customTypeChildren      CustomTypeChildren[]
+  customTypesOnJobRequest CustomTypeOnJobRequest[]
+}
+
+model CustomTypeChildren {
+  id           Int        @id @default(autoincrement())
+  name         String
+  customTypeId Int
+  customType   CustomType @relation(fields: [customTypeId], references: [id])
+}
+
+model Skill {
+  id                 Int                 @id @default(autoincrement())
+  name               String
+  skillsOnJobRequest SkillOnJobRequest[]
+}
+
+model SkillOnJobRequest {
+  id           Int        @id @default(autoincrement())
+  skillId      Int
+  jobRequestId Int
+  skill        Skill      @relation(fields: [skillId], references: [id])
+  jobRequest   JobRequest @relation(fields: [jobRequestId], references: [id])
+}
+
+model LocationOnJobRequest {
+  id           Int        @id @default(autoincrement())
+  locationId   Int
+  jobRequestId Int
+  location     Location   @relation(fields: [locationId], references: [id])
+  jobRequest   JobRequest @relation(fields: [jobRequestId], references: [id])
+}
+
+model CustomTypeOnJobRequest {
+  id           Int        @id @default(autoincrement())
+  customTypeId Int
+  jobRequestId Int
+  customType   CustomType @relation(fields: [customTypeId], references: [id])
+  jobRequest   JobRequest @relation(fields: [jobRequestId], references: [id])
+}
+
+model ManagementRolesOnIndustry {
+  id               Int            @id @default(autoincrement())
+  industryId       Int
+  managementRoleId Int
+  industry         TeamMatrix     @relation(fields: [industryId], references: [id])
+  managementRole   ManagementRole @relation(fields: [managementRoleId], references: [id])
+}
+
+model RolesOnJobRequest {
+  id           Int         @id @default(autoincrement())
+  roleId       Int?
+  jobRequestId Int
+  departmentId Int?
+  role         Role?       @relation(fields: [roleId], references: [id])
+  jobRequest   JobRequest  @relation(fields: [jobRequestId], references: [id])
+  department   Department? @relation(fields: [departmentId], references: [id])
+}
+
+model Client {
+  id           Int        @id @default(autoincrement())
+  name         String
+  teamMatrixId Int
+  teamMatrix   TeamMatrix @relation(fields: [teamMatrixId], references: [id])
+}
