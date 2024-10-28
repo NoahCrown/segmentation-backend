@@ -34,7 +34,7 @@ jobs:
       - name: Build application
         run: npm run build --if-present
         env:
-          CI: true
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Login to Azure
         uses: azure/login@v1
@@ -70,7 +70,7 @@ jobs:
       - name: Build application
         run: npm run build --if-present
         env:
-          CI: true
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Login to Azure
         uses: azure/login@v1
@@ -103,9 +103,9 @@ jobs:
         run: npm ci
 
       - name: Build application
-        run: npm run build --if-present
+        run: npm run build 
         env:
-          CI: true
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Login to Azure
         uses: azure/login@v1
