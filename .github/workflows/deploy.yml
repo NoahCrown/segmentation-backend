@@ -3,7 +3,7 @@ name: Express App Deployment
 on:
   push:
     branches:
-      - develop
+      - dev
       - staging
       - main
   workflow_dispatch:
@@ -14,7 +14,7 @@ env:
 jobs:
   deploy-development:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/dev'
     environment:
       name: development
     
@@ -36,17 +36,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v2
         with:
           app-name: segmentation-backend-dev
-          package: .
-          
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_DEV }}
 
   deploy-staging:
     runs-on: ubuntu-latest
@@ -72,17 +66,12 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v2
         with:
           app-name: segmentation-backend-staging
-          package: .
-          
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_STAGING }}
+
   deploy-production:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
@@ -103,17 +92,12 @@ jobs:
         run: npm ci
 
       - name: Build application
-        run: npm run build 
+        run: npm run build --if-present
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL}}
 
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v2
         with:
           app-name: segmentation-backend-prod
-          package: .
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_PROD }}
