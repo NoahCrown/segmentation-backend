@@ -14,9 +14,15 @@ app.use(express.json());
 // Routes
 app.use("/api", jobRequestRoutes);
 
-app.get('/api/hello', (req, res) => {
-  res.json("Hello world")
-})
+app.get('/', (req, res) => {
+  res.json({ message: "Hello from Segmentation Backend", version: "1.0.0" });
+});
+
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
 
 
 const PORT = process.env.PORT || 3000;
